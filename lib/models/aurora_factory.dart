@@ -25,7 +25,6 @@ class AuroraFactory {
   
   // Analysis KPIs (auto-calculated)
   final Map<String, dynamic> analysis;
-  final List<AnalysisSnapshot> analysisHistory; // For trend tracking
 
   AuroraFactory({
     required this.id,
@@ -46,9 +45,7 @@ class AuroraFactory {
     this.totalVolume = 0.0,
     this.rating = 0,
     Map<String, dynamic>? analysis,
-    List<AnalysisSnapshot>? analysisHistory,
-  }) : analysis = analysis ?? {},
-       analysisHistory = analysisHistory ?? [];
+  }) : analysis = analysis ?? {};
 
   /// Create a new factory with auto-generated UUID
   factory AuroraFactory.create({
@@ -101,10 +98,6 @@ class AuroraFactory {
       totalVolume: (json['total_volume'] as num?)?.toDouble() ?? 0.0,
       rating: json['rating'] as int? ?? 0,
       analysis: Map<String, dynamic>.from(json['analysis'] ?? {}),
-      analysisHistory: (json['analysis_history'] as List<dynamic>?)
-              ?.map((s) => AnalysisSnapshot.fromJson(s))
-              .toList() ??
-          [],
     );
   }
 
@@ -129,7 +122,6 @@ class AuroraFactory {
       'total_volume': totalVolume,
       'rating': rating,
       'analysis': analysis,
-      'analysis_history': analysisHistory.map((s) => s.toJson()).toList(),
     };
   }
 
@@ -154,7 +146,7 @@ class AuroraFactory {
   }
 
   /// Update analysis KPIs
-  AuroraFactory copyWithAnalysis(Map<String, dynamic> newAnalysis, {List<AnalysisSnapshot>? history}) {
+  AuroraFactory copyWithAnalysis(Map<String, dynamic> newAnalysis) {
     return AuroraFactory(
       id: id,
       uuid: uuid,
@@ -174,12 +166,11 @@ class AuroraFactory {
       totalVolume: totalVolume,
       rating: rating,
       analysis: newAnalysis,
-      analysisHistory: history ?? analysisHistory,
     );
   }
 
   /// Update factory after a deal
-  AuroraFactory copyWithDeal({double? dealAmount, List<AnalysisSnapshot>? newHistory}) {
+  AuroraFactory copyWithDeal({double? dealAmount}) {
     return AuroraFactory(
       id: id,
       uuid: uuid,
@@ -199,7 +190,6 @@ class AuroraFactory {
       totalVolume: dealAmount != null ? totalVolume + dealAmount : totalVolume,
       rating: rating,
       analysis: analysis,
-      analysisHistory: newHistory ?? analysisHistory,
     );
   }
 
@@ -376,43 +366,4 @@ class DealItem {
   }
 
   double get totalPrice => price * quantity;
-}
-
-/// Snapshot of analysis metrics at a specific point in time for trend tracking
-class AnalysisSnapshot {
-  final DateTime timestamp;
-  final double totalVolume;
-  final int totalDeals;
-  final double avgDealValue;
-  final String status;
-
-  AnalysisSnapshot({
-    required this.timestamp,
-    required this.totalVolume,
-    required this.totalDeals,
-    required this.avgDealValue,
-    required this.status,
-  });
-
-  factory AnalysisSnapshot.fromJson(Map<String, dynamic> json) {
-    return AnalysisSnapshot(
-      timestamp: json['timestamp'] is String 
-          ? DateTime.parse(json['timestamp']) 
-          : (json['timestamp'] as DateTime),
-      totalVolume: (json['total_volume'] ?? 0.0).toDouble(),
-      totalDeals: json['total_deals'] ?? 0,
-      avgDealValue: (json['avg_deal_value'] ?? 0.0).toDouble(),
-      status: json['status'] ?? 'Unknown',
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'timestamp': timestamp.toIso8601String(),
-      'total_volume': totalVolume,
-      'total_deals': totalDeals,
-      'avg_deal_value': avgDealValue,
-      'status': status,
-    };
-  }
 }

@@ -1,6 +1,5 @@
 import 'package:aurora/pages/product/product.dart';
 import 'package:aurora/pages/seller/sellerProfile.dart';
-import 'package:aurora/pages/seller/seller_factories_page.dart';
 import 'package:aurora/pages/setting/setting.dart';
 import 'package:aurora/screens/chat/nearby_users_screen.dart';
 import 'package:aurora/pages/singup/home.dart';
@@ -8,9 +7,6 @@ import 'package:aurora/pages/singup/login.dart';
 import 'package:aurora/services/supabase.dart';
 import 'package:aurora/theme/themeprovider.dart';
 import 'package:aurora/l10n/app_localizations.dart';
-import 'package:aurora/pages/customer/customers_page.dart';
-import 'package:aurora/pages/customer/analysis_page.dart';
-import 'package:aurora/pages/factory/factories_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -90,45 +86,6 @@ class AppDrawer extends StatelessWidget {
                             context,
                             const ProductPage(),
                             'products',
-                          ),
-                        ),
-                        // Customers Page - Manage seller's customers
-                        _buildMenuItem(
-                          context,
-                          icon: Icons.people_outlined,
-                          activeIcon: Icons.people,
-                          title: 'Customers',
-                          pageName: 'customers',
-                          onTap: () => _navigateTo(
-                            context,
-                            const CustomersPage(),
-                            'customers',
-                          ),
-                        ),
-                        // Analysis Page - View customer KPIs and charts
-                        _buildMenuItem(
-                          context,
-                          icon: Icons.analytics_outlined,
-                          activeIcon: Icons.analytics,
-                          title: 'Analysis',
-                          pageName: 'analysis',
-                          onTap: () => _navigateTo(
-                            context,
-                            const AnalysisPage(),
-                            'analysis',
-                          ),
-                        ),
-                        // Factories Page - Manage factory connections (Seller-specific)
-                        _buildMenuItem(
-                          context,
-                          icon: Icons.factory_outlined,
-                          activeIcon: Icons.factory,
-                          title: 'Factories',
-                          pageName: 'factories',
-                          onTap: () => _navigateTo(
-                            context,
-                            const SellerFactoriesPage(),
-                            'factories',
                           ),
                         ),
                         _buildMenuItem(
