@@ -1,46 +1,33 @@
 ```
-# Flutter/Dart specific
-.dart_tool/
-.packages
-pubspec.lock
-build/
-*.g.dart
-*.freezed.dart
-
 # Dependencies
-vendor/
-node_modules/
+.dart_tool/
+.build/
+dependencies/
+packages/
+
+# Generated code
+lib/generated/
+lib/**/generated/
 
 # Logs
 *.log
-**/logs
+**/*.log
 
 # Environment variables
 .env
 .env.local
 .env.*
-!.env.example
 
 # IDE files
-.vscode/
 .idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
 *.swp
 *.swo
 
 # OS generated files
 .DS_Store
 Thumbs.db
-
-# Build outputs
-dist/
-target/
-
-# Python related (if any mixed projects)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-venv/
-.venv/
 ```
