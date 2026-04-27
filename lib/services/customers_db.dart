@@ -102,9 +102,26 @@ class CustomersDB {
       analysis: {}, // Clear old analysis to force regen
     ).generateAnalysis();
 
+    // Create new analysis snapshot for history
+    final newSnapshot = AnalysisSnapshot(
+      timestamp: DateTime.now(),
+      totalSpent: newAnalysis['totalSpent'] ?? 0.0,
+      transactionCount: newAnalysis['transactionCount'] ?? 0,
+      avgOrderValue: newAnalysis['avgOrderValue'] ?? 0.0,
+      status: newAnalysis['status'] ?? 'Unknown',
+    );
+
+    // Add to history (keep last 100 snapshots to prevent file bloat)
+    final updatedHistory = List<AnalysisSnapshot>.from(customer.analysisHistory)
+      ..add(newSnapshot);
+    if (updatedHistory.length > 100) {
+      updatedHistory.removeAt(0);
+    }
+
     final updatedCustomer = customer.copyWith(
       transactions: updatedTransactions,
       analysis: newAnalysis,
+      analysisHistory: updatedHistory,
     );
 
     return saveCustomer(updatedCustomer);
