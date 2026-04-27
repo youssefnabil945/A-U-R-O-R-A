@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:aurora/config/performance_config.dart';
-import 'package:aurora/config/app_themes.dart';
 
 // ============================================================================
 // 1. Constants & Design System
@@ -28,12 +27,11 @@ class AppColors {
 // ============================================================================
 
 enum AppThemeId {
-  lightDefault,
-  lightOcean,
-  lightForest,
-  darkDefault,
-  darkMidnight,
-  darkSunset,
+  vscodeLight,
+  vscodeDark,
+  dracula,
+  monokai,
+  solarizedDark,
 }
 
 class ThemePalette {
@@ -71,88 +69,74 @@ class AppThemes {
 
   static const List<ThemePalette> palettes = [
     ThemePalette(
-      id: AppThemeId.lightDefault,
-      name: 'Light Default',
-      description: 'Clean and professional light theme with purple accents',
+      id: AppThemeId.vscodeLight,
+      name: 'VS Code Light+',
+      description: 'Classic Light+ palette from VS Code',
       brightness: Brightness.light,
-      seed: const Color(0xFF6200EE),
-      primary: const Color(0xFF6200EE),
-      secondary: const Color(0xFF03DAC6),
-      accent: const Color(0xFF3700B3),
+      seed: Color(0xFF007ACC),
+      primary: Color(0xFF007ACC),
+      secondary: Color(0xFF2B88D8),
+      accent: Color(0xFF0E639C),
       surface: Colors.white,
-      background: const Color(0xFFF5F5F5),
+      background: Color(0xFFF5F5F7),
       card: Colors.white,
-      preview: [const Color(0xFF6200EE), const Color(0xFF03DAC6), const Color(0xFF3700B3)],
+      preview: [Color(0xFF007ACC), Color(0xFF2B88D8), Color(0xFF0E639C)],
     ),
     ThemePalette(
-      id: AppThemeId.lightOcean,
-      name: 'Light Ocean',
-      description: 'Refreshing ocean-inspired light theme with blue tones',
-      brightness: Brightness.light,
-      seed: const Color(0xFF0077B6),
-      primary: const Color(0xFF0077B6),
-      secondary: const Color(0xFF90E0EF),
-      accent: const Color(0xFF023E8A),
-      surface: Colors.white,
-      background: const Color(0xFFF0F8FF),
-      card: Colors.white,
-      preview: [const Color(0xFF0077B6), const Color(0xFF90E0EF), const Color(0xFF023E8A)],
-    ),
-    ThemePalette(
-      id: AppThemeId.lightForest,
-      name: 'Light Forest',
-      description: 'Natural forest-themed light palette with green hues',
-      brightness: Brightness.light,
-      seed: const Color(0xFF2D6A4F),
-      primary: const Color(0xFF2D6A4F),
-      secondary: const Color(0xFF95D5B2),
-      accent: const Color(0xFF1B4332),
-      surface: Colors.white,
-      background: const Color(0xFFF1F8E9),
-      card: Colors.white,
-      preview: [const Color(0xFF2D6A4F), const Color(0xFF95D5B2), const Color(0xFF1B4332)],
-    ),
-    ThemePalette(
-      id: AppThemeId.darkDefault,
-      name: 'Dark Default',
-      description: 'Classic dark theme with excellent contrast',
+      id: AppThemeId.vscodeDark,
+      name: 'VS Code Dark+',
+      description: 'Default Dark+ theme used in VS Code',
       brightness: Brightness.dark,
-      seed: const Color(0xFFBB86FC),
-      primary: const Color(0xFFBB86FC),
-      secondary: const Color(0xFF03DAC6),
-      accent: const Color(0xFF3700B3),
-      surface: const Color(0xFF1E1E1E),
-      background: const Color(0xFF121212),
-      card: const Color(0xFF1E1E1E),
-      preview: [const Color(0xFFBB86FC), const Color(0xFF03DAC6), const Color(0xFF3700B3)],
+      seed: Color(0xFF569CD6),
+      primary: Color(0xFF569CD6),
+      secondary: Color(0xFF4EC9B0),
+      accent: Color(0xFFD4D4D4),
+      surface: Color(0xFF1E1E1E),
+      background: Color(0xFF111111),
+      card: Color(0xFF252526),
+      preview: [Color(0xFF569CD6), Color(0xFF4EC9B0), Color(0xFFD4D4D4)],
     ),
     ThemePalette(
-      id: AppThemeId.darkMidnight,
-      name: 'Dark Midnight',
-      description: 'Deep midnight blue theme for night owls',
+      id: AppThemeId.dracula,
+      name: 'Dracula',
+      description: 'Popular purple/green Dracula palette',
       brightness: Brightness.dark,
-      seed: const Color(0xFF3A86FF),
-      primary: const Color(0xFF3A86FF),
-      secondary: const Color(0xFF8338EC),
-      accent: const Color(0xFFFB5607),
-      surface: const Color(0xFF15192B),
-      background: const Color(0xFF0B0F19),
-      card: const Color(0xFF15192B),
-      preview: [const Color(0xFF3A86FF), const Color(0xFF8338EC), const Color(0xFFFB5607)],
+      seed: Color(0xFFBD93F9),
+      primary: Color(0xFFBD93F9),
+      secondary: Color(0xFF50FA7B),
+      accent: Color(0xFFFF79C6),
+      surface: Color(0xFF1E1F29),
+      background: Color(0xFF13141A),
+      card: Color(0xFF232433),
+      preview: [Color(0xFFBD93F9), Color(0xFF50FA7B), Color(0xFFFF79C6)],
     ),
     ThemePalette(
-      id: AppThemeId.darkSunset,
-      name: 'Dark Sunset',
-      description: 'Warm sunset-inspired dark theme with orange tones',
+      id: AppThemeId.monokai,
+      name: 'Monokai',
+      description: 'Warm Monokai classic colors',
       brightness: Brightness.dark,
-      seed: const Color(0xFFFF7E67),
-      primary: const Color(0xFFFF7E67),
-      secondary: const Color(0xFFFFD166),
-      accent: const Color(0xFFEF476F),
-      surface: const Color(0xFF2D1B1B),
-      background: const Color(0xFF1A0B0B),
-      card: const Color(0xFF2D1B1B),
-      preview: [const Color(0xFFFF7E67), const Color(0xFFFFD166), const Color(0xFFEF476F)],
+      seed: Color(0xFF66D9EF),
+      primary: Color(0xFF66D9EF),
+      secondary: Color(0xFFA6E22E),
+      accent: Color(0xFFF92672),
+      surface: Color(0xFF2D2A2E),
+      background: Color(0xFF211F22),
+      card: Color(0xFF2F2B30),
+      preview: [Color(0xFF66D9EF), Color(0xFFA6E22E), Color(0xFFF92672)],
+    ),
+    ThemePalette(
+      id: AppThemeId.solarizedDark,
+      name: 'Solarized Dark',
+      description: 'Teal/amber Solarized Dark palette',
+      brightness: Brightness.dark,
+      seed: Color(0xFF268BD2),
+      primary: Color(0xFF268BD2),
+      secondary: Color(0xFF2AA198),
+      accent: Color(0xFFB58900),
+      surface: Color(0xFF002B36),
+      background: Color(0xFF00212B),
+      card: Color(0xFF073642),
+      preview: [Color(0xFF268BD2), Color(0xFF2AA198), Color(0xFFB58900)],
     ),
   ];
 
@@ -184,9 +168,9 @@ class AppTheme {
       _buildThemeData(palette, brightnessOverride: brightnessOverride);
 
   static ThemeData get lightTheme =>
-      _buildThemeData(AppThemes.palette(AppThemeId.lightDefault));
+      _buildThemeData(AppThemes.palette(AppThemeId.vscodeLight));
   static ThemeData get darkTheme =>
-      _buildThemeData(AppThemes.palette(AppThemeId.darkDefault));
+      _buildThemeData(AppThemes.palette(AppThemeId.vscodeDark));
 
   static ThemeData _buildThemeData(
     ThemePalette palette, {
@@ -635,11 +619,9 @@ class ThemeProvider extends ChangeNotifier {
         await setUseSystemTheme(false);
       }
 
-      final nextTheme = _themeId == AppThemeId.darkDefault || 
-                        _themeId == AppThemeId.darkMidnight || 
-                        _themeId == AppThemeId.darkSunset
-          ? AppThemeId.lightDefault
-          : AppThemeId.darkDefault;
+      final nextTheme = _themeId == AppThemeId.vscodeDark
+          ? AppThemeId.vscodeLight
+          : AppThemeId.vscodeDark;
 
       await setTheme(nextTheme);
     } catch (e) {
