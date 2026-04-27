@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/aurora_customer.dart';
 import '../../services/customers_db.dart';
 import 'customer_form_screen.dart';
+import 'bill_creation_screen.dart';
 
 /// Main Customer Page with Grid and Table Views
 class CustomersPage extends StatefulWidget {
@@ -122,9 +123,25 @@ class _CustomersPageState extends State<CustomersPage> {
               : _isGridView
                   ? _buildGridView()
                   : _buildTableView(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToForm(),
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Bill Creation FAB
+          FloatingActionButton.small(
+            heroTag: 'billFab',
+            onPressed: () => _navigateToBillCreation(),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            child: const Icon(Icons.receipt_long),
+          ),
+          const SizedBox(height: 8),
+          // Add Customer FAB
+          FloatingActionButton(
+            heroTag: 'customerFab',
+            onPressed: () => _navigateToForm(),
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
@@ -260,6 +277,16 @@ class _CustomersPageState extends State<CustomersPage> {
     if (result == true) _loadCustomers();
   }
 
+  void _navigateToBillCreation({AuroraCustomer? customer}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BillCreationScreen(existingCustomer: customer),
+      ),
+    );
+    if (result == true) _loadCustomers();
+  }
+
   void _showCustomerDetails(AuroraCustomer customer) {
     showModalBottomSheet(
       context: context,
@@ -293,12 +320,35 @@ class _CustomersPageState extends State<CustomersPage> {
                   trailing: Text('\$${t.finalAmount}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               )),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _navigateToForm(customer: customer, createDeal: true);
-              },
-              child: const Text('Create New Deal'),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _navigateToForm(customer: customer, createDeal: true);
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit Customer'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _navigateToBillCreation(customer: customer);
+                    },
+                    icon: const Icon(Icons.receipt_long),
+                    label: const Text('New Bill'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

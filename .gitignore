@@ -1,33 +1,60 @@
 ```
-# Dependencies
+# Build and compilation artifacts
+build/
 .dart_tool/
-.build/
-dependencies/
-packages/
+.ios/
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+android/local.properties
+ios/.symlinks/
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.swift
+lib/generated_plugin_registrant.dart
+linux/flutter/ephemeral/
+linux/ephemeral/
+macos/Flutter/ephemeral/
+macos/Runner/GeneratedPluginRegistrant.swift
+windows/flutter/ephemeral/
+windows/runner/flutter_window.cpp
+windows/runner/run_loop.cpp
+windows/runner/run_loop.h
+windows/runner/utils.cpp
+windows/runner/utils.h
+windows/runner/win32_window.cpp
+windows/runner/win32_window.h
 
-# Generated code
-lib/generated/
-lib/**/generated/
+# Dependencies
+.pub/
+pubspec.lock
 
 # Logs
 *.log
-**/*.log
+**/logs
+
+# OS generated files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+**/Thumbs.db
 
 # Environment variables
 .env
 .env.local
 .env.*
 
-# IDE files
-.idea/
+# IDE specific
 .vscode/
-*.iml
-*.ipr
-*.iws
+.idea/
 *.swp
 *.swo
+*.tmp
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Local configuration
+local.properties
+.key
+.keystore
 ```
