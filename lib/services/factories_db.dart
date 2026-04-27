@@ -255,7 +255,23 @@ class FactoriesDB extends ChangeNotifier {
           ? updatedFactory.totalVolume / updatedFactory.totalDeals 
           : 0.0;
       
-      final finalFactory = updatedFactory.copyWithAnalysis(analysis);
+      // Create new analysis snapshot for history
+      final newSnapshot = AnalysisSnapshot(
+        timestamp: DateTime.now(),
+        totalVolume: updatedFactory.totalVolume,
+        totalDeals: updatedFactory.totalDeals,
+        avgDealValue: analysis['avg_deal_value'] ?? 0.0,
+        status: updatedFactory.status,
+      );
+      
+      // Add to history (keep last 100 snapshots to prevent file bloat)
+      final updatedHistory = List<AnalysisSnapshot>.from(factory.analysisHistory)
+        ..add(newSnapshot);
+      if (updatedHistory.length > 100) {
+        updatedHistory.removeAt(0);
+      }
+      
+      final finalFactory = updatedFactory.copyWithAnalysis(analysis, history: updatedHistory);
       return await saveFactory(finalFactory);
     } catch (e) {
       debugPrint('[FactoriesDB] Error recording deal: $e');
