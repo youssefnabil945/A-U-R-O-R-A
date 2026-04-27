@@ -27,30 +27,41 @@ class _CustomersPageState extends State<CustomersPage> {
   }
 
   Future<void> _loadCustomers() async {
+    // Don't block UI - load in background
+    if (_isLoading) return; // Prevent duplicate loads
+    
     setState(() => _isLoading = true);
+    
+    // Use compute-like pattern for heavy operations
+    await Future.delayed(Duration(milliseconds: 50)); // Yield to UI thread
+    
     try {
       final db = CustomersDB();
       var list = await db.getAllCustomers();
       
-      // Sorting Logic
+      // Sorting Logic - optimized
       if (_sortBy == 'sales') {
         list.sort((a, b) => 
-          (b.analysis['totalSpent'] ?? 0).compareTo(a.analysis['totalSpent'] ?? 0));
+          (b.analysis['totalSpent'] as num? ?? 0).compareTo(a.analysis['totalSpent'] as num? ?? 0));
       } else if (_sortBy == 'date') {
         list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       } else {
         list.sort((a, b) => a.fullName.compareTo(b.fullName));
       }
       
-      setState(() {
-        _customers = list;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _customers = list;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading customers: $e')),
-      );
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading customers: $e')),
+        );
+      }
     }
   }
 

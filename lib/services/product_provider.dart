@@ -95,6 +95,7 @@ class ProductProvider extends ChangeNotifier {
   ProductsDB get productsDb => _productsDb;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  List<AuroraProduct> get products => List.unmodifiable(_cachedProducts);
   List<AuroraProduct> get cachedProducts => List.unmodifiable(_cachedProducts);
   bool get hasValidCache =>
       _cacheTimestamp != null &&

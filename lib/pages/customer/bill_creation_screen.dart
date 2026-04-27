@@ -27,7 +27,6 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
   String? _selectedPaymentMethod;
   List<Map<String, dynamic>> _selectedProducts = [];
   
-  bool _isLoading = false;
   List<AuroraProduct> _availableProducts = [];
 
   final List<String> _paymentMethods = ['Cash', 'Card', 'Bank Transfer', 'Credit', 'Mobile Payment'];
@@ -38,23 +37,24 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
     if (widget.existingCustomer != null) {
       _selectedCustomer = widget.existingCustomer;
     }
+    // Load products in background without blocking UI
     _loadProducts();
   }
 
   Future<void> _loadProducts() async {
-    setState(() => _isLoading = true);
+    // Don't show full screen loader, just load in background
     try {
       final provider = context.read<ProductProvider>();
       await provider.loadProducts();
-      setState(() {
-        _availableProducts = provider.products;
-        _isLoading = false;
-      });
+      
+      if (mounted) {
+        setState(() {
+          _availableProducts = provider.products;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading products: $e')),
-      );
+      // Silently fail, will show error when user tries to add product
+      debugPrint('Error loading products: $e');
     }
   }
 
@@ -78,56 +78,75 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
   }
 
   void _selectCustomer() async {
-    final db = CustomersDB();
-    final customers = await db.getAllCustomers();
-    
-    if (customers.isEmpty) {
-      // No customers, navigate to add customer
-      _navigateToAddCustomer();
-      return;
-    }
-
-    final selected = await showDialog<AuroraCustomer>(
+    // Show loading indicator
+    showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Select Customer'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: customers.length,
-            itemBuilder: (ctx, i) {
-              final c = customers[i];
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text(c.fullName[0].toUpperCase()),
-                ),
-                title: Text(c.fullName),
-                subtitle: Text(c.phoneNumber),
-                trailing: Text('\$${(c.analysis['totalSpent'] ?? 0.0).toStringAsFixed(0)}'),
-                onTap: () => Navigator.pop(ctx, c),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _navigateToAddCustomer();
-            },
-            child: const Text('+ Add New Customer'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
+    
+    try {
+      final db = CustomersDB();
+      // Load customers asynchronously without blocking
+      final customers = await db.getAllCustomers();
+      
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+      
+      if (customers.isEmpty) {
+        // No customers, navigate to add customer
+        _navigateToAddCustomer();
+        return;
+      }
 
-    if (selected != null) {
-      setState(() => _selectedCustomer = selected);
+      final selected = await showDialog<AuroraCustomer>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Select Customer'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: customers.length,
+              itemBuilder: (ctx, i) {
+                final c = customers[i];
+                return ListTile(
+                  leading: CircleAvatar(
+                    child: Text(c.fullName[0].toUpperCase()),
+                  ),
+                  title: Text(c.fullName),
+                  subtitle: Text(c.phoneNumber),
+                  trailing: Text('\$${(c.analysis['totalSpent'] as num? ?? 0.0).toStringAsFixed(0)}'),
+                  onTap: () => Navigator.pop(ctx, c),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _navigateToAddCustomer();
+              },
+              child: const Text('+ Add New Customer'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      );
+
+      if (selected != null && mounted) {
+        setState(() => _selectedCustomer = selected);
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading customers: $e')),
+      );
     }
   }
 
@@ -139,37 +158,59 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
   }
 
   void _addProduct() async {
-    if (_availableProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No products available. Add products first.')),
-      );
-      return;
-    }
-
-    final selected = await showDialog<Map<String, dynamic>>(
+    // Show loading indicator
+    showDialog(
       context: context,
-      builder: (ctx) => _ProductSelectionDialog(products: _availableProducts),
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
-
-    if (selected != null) {
-      setState(() {
-        // Check if product already exists, update quantity
-        final existingIndex = _selectedProducts.indexWhere(
-          (p) => p['id'] == selected['id'],
+    
+    try {
+      // Reload products to ensure we have latest data
+      final provider = context.read<ProductProvider>();
+      await provider.loadProducts();
+      
+      if (mounted) Navigator.pop(context); // Close loading
+      
+      final products = provider.products;
+      
+      if (products.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No products available. Add products first.')),
         );
-        
-        if (existingIndex >= 0) {
-          final existing = _selectedProducts[existingIndex];
-          final newQuantity = existing['quantity'] + selected['quantity'];
-          _selectedProducts[existingIndex] = {
-            ...existing,
-            'quantity': newQuantity,
-            'subtotal': newQuantity * (existing['price'] as double),
-          };
-        } else {
-          _selectedProducts.add(selected);
-        }
-      });
+        return;
+      }
+
+      final selected = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (ctx) => _ProductSelectionDialog(products: products),
+      );
+
+      if (selected != null && mounted) {
+        setState(() {
+          // Check if product already exists, update quantity
+          final existingIndex = _selectedProducts.indexWhere(
+            (p) => p['id'] == selected['id'],
+          );
+          
+          if (existingIndex >= 0) {
+            final existing = _selectedProducts[existingIndex];
+            final newQuantity = existing['quantity'] + selected['quantity'];
+            _selectedProducts[existingIndex] = {
+              ...existing,
+              'quantity': newQuantity,
+              'subtotal': newQuantity * (existing['price'] as double),
+            };
+          } else {
+            _selectedProducts.add(selected);
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // Close loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading products: $e')),
+      );
     }
   }
 
@@ -210,7 +251,12 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    // Show saving indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
 
     try {
       // Create transaction items
@@ -238,6 +284,9 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
       final db = CustomersDB();
       await db.addTransaction(_selectedCustomer!.username, transaction);
 
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Bill created successfully! Analysis updated.'),
@@ -247,11 +296,11 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
 
       Navigator.pop(context, true);
     } catch (e) {
+      // Close loading dialog if still open
+      if (mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error creating bill: $e'), backgroundColor: Colors.red),
       );
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -268,9 +317,7 @@ class _BillCreationScreenState extends State<BillCreationScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
+      body: Form(
               key: _formKey,
               child: ListView(
                 padding: const EdgeInsets.all(16),
