@@ -37,8 +37,14 @@ import 'package:aurora/pages/shop/wallet_page.dart';
 import 'package:aurora/pages/middleman/middleman_login_page.dart';
 import 'package:aurora/pages/middleman/middleman_signup_page.dart';
 import 'package:aurora/pages/seller/seller_login_page.dart';
+import 'package:aurora/pages/seller/seller_dashboard_page.dart';
+import 'package:aurora/pages/seller/sellerProfile.dart';
 import 'package:aurora/pages/factory/factory_login_page.dart';
 import 'package:aurora/pages/factory/factory_dashboard_page.dart';
+import 'package:aurora/pages/product/product.dart';
+import 'package:aurora/pages/customers/customers_page.dart';
+import 'package:aurora/pages/analytics/analytics_page.dart';
+import 'package:aurora/pages/setting/setting.dart';
 import 'package:aurora/pages/singup/home.dart';
 import 'package:aurora/pages/singup/login.dart';
 import 'package:aurora/services/supabase.dart';
@@ -48,6 +54,7 @@ import 'package:aurora/services/permissions.dart';
 import 'package:aurora/services/notification_service.dart';
 import 'package:aurora/services/user_preferences_service.dart';
 import 'package:aurora/services/presence_service.dart';
+import 'package:aurora/services/role_sandbox_service.dart';
 import 'package:aurora/theme/themeprovider.dart';
 import 'package:aurora/l10n/app_localizations.dart';
 import 'package:aurora/models/wallet.dart';
@@ -205,9 +212,158 @@ class Aurora extends StatelessWidget {
         '/middleman/login': (context) => const MiddlemanLoginPage(),
         '/middleman/signup': (context) => const MiddlemanSignupPage(),
         '/seller/login': (context) => const SellerLoginPage(),
+        '/seller/dashboard': (context) => const SellerDashboardPage(),
         '/factory/login': (context) => const FactoryLoginPage(),
         '/factory/dashboard': (context) => const FactoryDashboardPage(),
+        // Role-based sandbox routes
+        '/profile': (context) => _buildProfilePage(context),
+        '/products': (context) => _buildProductsPage(context),
+        '/customers': (context) => _buildCustomersPage(context),
+        '/analytics': (context) => _buildAnalyticsPage(context),
+        '/wallet': (context) => const WalletPage(),
+        '/settings': (context) => _buildSettingsPage(context),
+        '/sellers': (context) => _buildSellersPage(context),
+        '/orders': (context) => _buildOrdersPage(context),
       },
     );
   }
+
+  // ============================================================================
+  // Role-based Page Builders - These ensure users stay within their sandbox
+  // ============================================================================
+  
+  Widget _buildProfilePage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final sandboxService = RoleSandboxService();
+    
+    // Check if user can access profile
+    if (!sandboxService.isModuleAllowed(authProvider.userRole, AppModule.profile)) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+    
+    // Return appropriate profile page based on role
+    switch (authProvider.accountType) {
+      case AccountType.seller:
+        return const SellerProfile();
+      case AccountType.factory:
+        // Factory profile is part of factory dashboard - use placeholder for now
+        return const FactoryProfilePlaceholder();
+      default:
+        return const UserProfilePage();
+    }
+  }
+
+  Widget _buildProductsPage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final sandboxService = RoleSandboxService();
+    
+    if (!sandboxService.isModuleAllowed(authProvider.userRole, AppModule.products)) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+    
+    return const ProductPage();
+  }
+
+  Widget _buildCustomersPage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final sandboxService = RoleSandboxService();
+    
+    if (!sandboxService.isModuleAllowed(authProvider.userRole, AppModule.customers)) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+    
+    return const CustomersPage();
+  }
+
+  Widget _buildAnalyticsPage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final sandboxService = RoleSandboxService();
+    
+    if (!sandboxService.isModuleAllowed(authProvider.userRole, AppModule.analytics)) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+    
+    return const AnalyticsPage();
+  }
+
+  Widget _buildSettingsPage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final sandboxService = RoleSandboxService();
+    
+    if (!sandboxService.isModuleAllowed(authProvider.userRole, AppModule.settings)) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+    
+    return const Setting();
+  }
+
+  Widget _buildSellersPage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final sandboxService = RoleSandboxService();
+    
+    if (!sandboxService.isModuleAllowed(authProvider.userRole, AppModule.sellers)) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+    
+    return const SellersListPage();
+  }
+
+  Widget _buildOrdersPage(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final sandboxService = RoleSandboxService();
+    
+    if (!sandboxService.isModuleAllowed(authProvider.userRole, AppModule.orders)) {
+      return const Scaffold(
+        body: Center(child: Text('Access Denied')),
+      );
+    }
+    
+    return const OrdersPage();
+  }
+}
+
+// ============================================================================
+// Placeholder pages for future implementation
+// ============================================================================
+
+class UserProfilePage extends StatelessWidget {
+  const UserProfilePage({super.key});
+  @override
+  Widget build(BuildContext context) => const Center(child: Text('User Profile'));
+}
+
+class FactoryProfilePlaceholder extends StatelessWidget {
+  const FactoryProfilePlaceholder({super.key});
+  @override
+  Widget build(BuildContext context) => const Center(child: Text('Factory Profile'));
+}
+
+class SellersListPage extends StatelessWidget {
+  const SellersListPage({super.key});
+  @override
+  Widget build(BuildContext context) => const Center(child: Text('Sellers List'));
+}
+
+class OrdersPage extends StatelessWidget {
+  const OrdersPage({super.key});
+  @override
+  Widget build(BuildContext context) => const Center(child: Text('Orders'));
+}
+
+class DistributorDashboardPage extends StatelessWidget {
+  const DistributorDashboardPage({super.key});
+  @override
+  Widget build(BuildContext context) => const Center(child: Text('Distributor Dashboard - Coming Soon'));
 }
