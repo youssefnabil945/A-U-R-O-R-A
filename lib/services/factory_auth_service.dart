@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../models/factory.dart';
 import '../services/secure_storage_service.dart';
 
@@ -19,122 +21,79 @@ class FactoryAuthService {
   /// Check if factory is logged in
   bool get isLoggedIn => _currentFactory != null;
 
-  /// Hash password using SHA-256
-  String _hashPassword(String password) {
-    final bytes = utf8.encode(password);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
-
-  /// Sign up a new factory account
-  /// Creates local JSON file in secure storage
-  Future<Factory?> signUp({
-    required String username,
-    required String email,
-    required String password,
-    required String factoryName,
-    String? contactPhone,
-    String? address,
-    String? taxId,
-  }) async {
+  /// Login with username and password
+  Future<bool> login(String username, String password) async {
     try {
-      // Check if user already exists (try to load)
-      // In real app, this would check a central database first
-      final existing = await _storage.loadData(
-        uuid: 'pending', // Temporary UUID before login
-        username: username,
-      );
-
-      if (existing != null) {
-        throw Exception('Username already exists');
+      final hashedPassword = sha256.convert(utf8.encode(password)).toString();
+      
+      // Find factory by username (in production, this would be a database query)
+      final directory = await getApplicationDocumentsDirectory();
+      final factoryFile = File('${directory.path}/secure_storage/factories/$username.json');
+      
+      if (!await factoryFile.exists()) {
+        debugPrint('Factory not found: $username');
+        return false;
       }
-
-      final factory = Factory(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        username: username,
-        email: email,
-        passwordHash: _hashPassword(password),
-        factoryName: factoryName,
-        contactPhone: contactPhone,
-        address: address,
-        taxId: taxId,
-        createdAt: DateTime.now(),
-        isActive: true,
-        walletBalance: 0.0,
-        productIds: [],
-      );
-
-      // Save to secure local storage
-      final success = await _storage.saveData(
-        uuid: factory.id,
-        username: username,
-        data: factory.toJson(),
-      );
-
-      if (!success) {
-        throw Exception('Failed to save factory data');
+      
+      final content = await factoryFile.readAsString();
+      final Map<String, dynamic> factoryData = json.decode(content);
+      
+      if (factoryData['password'] != hashedPassword) {
+        debugPrint('Invalid password for: $username');
+        return false;
       }
-
-      _currentFactory = factory;
-      return factory;
+      
+      _currentFactory = Factory.fromMap(factoryData);
+      return true;
     } catch (e) {
-      debugPrint('Factory signup error: $e');
-      rethrow;
+      debugPrint('Login error: $e');
+      return false;
     }
   }
 
-  /// Login factory account
-  Future<Factory?> login({
+  /// Register new factory
+  Future<Factory?> register({
     required String username,
     required String password,
+    required String name,
+    String? location,
+    String? specialization,
+    int? productionCapacity,
   }) async {
     try {
-      // Try to find factory by username
-      // In production, you'd query a central database to get the UUID first
-      // For now, we assume username matches and try common UUID patterns
-      // TODO: Implement proper username-to-UUID mapping
-      
-      // For demonstration, we'll try to load with a placeholder
-      // In real implementation, maintain an index file mapping usernames to UUIDs
-      final allFactories = await _getAllFactoriesIndex();
-      
-      String? factoryUuid;
-      for (var entry in allFactories.entries) {
-        if (entry.value == username) {
-          factoryUuid = entry.key;
-          break;
-        }
+      // Check if factory already exists
+      final existing = await _getFactoryByUsername(username);
+      if (existing != null) {
+        debugPrint('Factory already exists: $username');
+        return null;
       }
-
-      if (factoryUuid == null) {
-        throw Exception('Invalid username or password');
-      }
-
-      final data = await _storage.loadData(
-        uuid: factoryUuid,
+      
+      final hashedPassword = sha256.convert(utf8.encode(password)).toString();
+      final uuid = DateTime.now().millisecondsSinceEpoch.toString();
+      
+      final factory = Factory(
+        id: uuid,
         username: username,
+        password: hashedPassword,
+        name: name,
+        location: location,
+        specialization: specialization,
+        productionCapacity: productionCapacity,
+        createdAt: DateTime.now(),
       );
-
-      if (data == null) {
-        throw Exception('Invalid username or password');
+      
+      // Save to secure storage
+      final success = await _saveFactory(factory);
+      
+      if (success) {
+        _currentFactory = factory;
+        await _saveFactoryToIndex(uuid, username);
       }
-
-      final factory = Factory.fromJson(data);
-
-      if (!factory.isActive) {
-        throw Exception('Account is deactivated');
-      }
-
-      final hashedPassword = _hashPassword(password);
-      if (factory.passwordHash != hashedPassword) {
-        throw Exception('Invalid username or password');
-      }
-
-      _currentFactory = factory;
-      return factory;
+      
+      return success ? factory : null;
     } catch (e) {
-      debugPrint('Factory login error: $e');
-      rethrow;
+      debugPrint('Registration error: $e');
+      return null;
     }
   }
 
@@ -143,81 +102,61 @@ class FactoryAuthService {
     _currentFactory = null;
   }
 
-  /// Update factory profile
-  Future<bool> updateProfile({
-    String? factoryName,
-    String? contactPhone,
-    String? address,
-    String? taxId,
-  }) async {
-    if (_currentFactory == null) return false;
-
+  /// Get factory by username
+  Future<Factory?> _getFactoryByUsername(String username) async {
     try {
-      final updated = _currentFactory!.copyWith(
-        factoryName: factoryName,
-        contactPhone: contactPhone,
-        address: address,
-        taxId: taxId,
-      );
-
-      final success = await _storage.saveData(
-        uuid: _currentFactory!.id,
-        username: _currentFactory!.username,
-        data: updated.toJson(),
-      );
-
-      if (success) {
-        _currentFactory = updated;
+      final directory = await getApplicationDocumentsDirectory();
+      final factoryFile = File('${directory.path}/secure_storage/factories/$username.json');
+      
+      if (!await factoryFile.exists()) {
+        return null;
       }
-
-      return success;
+      
+      final content = await factoryFile.readAsString();
+      final Map<String, dynamic> factoryData = json.decode(content);
+      
+      return Factory.fromMap(factoryData);
     } catch (e) {
-      debugPrint('Update profile error: $e');
-      return false;
+      debugPrint('Get factory error: $e');
+      return null;
     }
   }
 
-  /// Update wallet balance
-  Future<bool> updateWalletBalance(double newBalance) async {
-    if (_currentFactory == null) return false;
-
+  /// Save factory to secure storage
+  Future<bool> _saveFactory(Factory factory) async {
     try {
-      final updated = _currentFactory!.copyWith(walletBalance: newBalance);
-
-      final success = await _storage.saveData(
-        uuid: _currentFactory!.id,
-        username: _currentFactory!.username,
-        data: updated.toJson(),
-      );
-
-      if (success) {
-        _currentFactory = updated;
+      final directory = await getApplicationDocumentsDirectory();
+      final factoriesDir = Directory('${directory.path}/secure_storage/factories');
+      
+      if (!await factoriesDir.exists()) {
+        await factoriesDir.create(recursive: true);
       }
-
-      return success;
+      
+      final factoryFile = File('${factoriesDir.path}/${factory.username}.json');
+      await factoryFile.writeAsString(json.encode(factory.toMap()));
+      
+      return true;
     } catch (e) {
-      debugPrint('Update wallet error: $e');
+      debugPrint('Save factory error: $e');
       return false;
     }
   }
 
   /// Helper: Get index of all factories (username -> UUID mapping)
-  /// In production, this would be a central database query
   Future<Map<String, String>> _getAllFactoriesIndex() async {
-    // Maintain an index.json file in the secure storage directory
     try {
       final directory = await getApplicationDocumentsDirectory();
       final indexFile = File('${directory.path}/secure_storage/factories_index.json');
-      
+
       if (!await indexFile.exists()) {
         return {};
       }
-      
+
       final content = await indexFile.readAsString();
       if (content.isEmpty) {
         return {};
       }
-      
+
       return Map<String, String>.from(json.decode(content));
     } catch (e) {
       debugPrint('Error loading factories index: $e');
@@ -230,14 +169,14 @@ class FactoryAuthService {
     try {
       final index = await _getAllFactoriesIndex();
       index[uuid] = username;
-      
+
       final directory = await getApplicationDocumentsDirectory();
       final indexFile = File('${directory.path}/secure_storage/factories_index.json');
-      
+
       if (!await indexFile.parent.exists()) {
         await indexFile.parent.create(recursive: true);
       }
-      
+
       await indexFile.writeAsString(json.encode(index));
     } catch (e) {
       debugPrint('Error saving factory to index: $e');
@@ -248,20 +187,23 @@ class FactoryAuthService {
   Future<String?> exportFactoryData() async {
     if (_currentFactory == null) return null;
     
-    return await _storage.exportData(
-      uuid: _currentFactory!.id,
-      username: _currentFactory!.username,
-    );
+    try {
+      return json.encode(_currentFactory!.toMap());
+    } catch (e) {
+      debugPrint('Export error: $e');
+      return null;
+    }
   }
 
   /// Import factory data from JSON string
   Future<bool> importFactoryData(String jsonData) async {
-    if (_currentFactory == null) return false;
-    
-    return await _storage.importData(
-      uuid: _currentFactory!.id,
-      username: _currentFactory!.username,
-      jsonData: jsonData,
-    );
+    try {
+      final Map<String, dynamic> factoryData = json.decode(jsonData);
+      _currentFactory = Factory.fromMap(factoryData);
+      return true;
+    } catch (e) {
+      debugPrint('Import error: $e');
+      return false;
+    }
   }
 }
