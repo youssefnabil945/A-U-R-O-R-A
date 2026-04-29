@@ -22,7 +22,10 @@ class FactoryAuthService {
   bool get isLoggedIn => _currentFactory != null;
 
   /// Login with username and password
-  Future<bool> login(String username, String password) async {
+  Future<Factory?> login({
+    required String username,
+    required String password,
+  }) async {
     try {
       final hashedPassword = sha256.convert(utf8.encode(password)).toString();
       
@@ -32,7 +35,7 @@ class FactoryAuthService {
       
       if (!await factoryFile.exists()) {
         debugPrint('Factory not found: $username');
-        return false;
+        return null;
       }
       
       final content = await factoryFile.readAsString();
@@ -40,14 +43,14 @@ class FactoryAuthService {
       
       if (factoryData['password'] != hashedPassword) {
         debugPrint('Invalid password for: $username');
-        return false;
+        return null;
       }
       
       _currentFactory = Factory.fromMap(factoryData);
-      return true;
+      return _currentFactory;
     } catch (e) {
       debugPrint('Login error: $e');
-      return false;
+      return null;
     }
   }
 
@@ -74,11 +77,12 @@ class FactoryAuthService {
       final factory = Factory(
         id: uuid,
         username: username,
-        password: hashedPassword,
-        name: name,
-        location: location,
-        specialization: specialization,
-        productionCapacity: productionCapacity,
+        email: '',
+        passwordHash: hashedPassword,
+        factoryName: name,
+        contactPhone: null,
+        address: location,
+        taxId: null,
         createdAt: DateTime.now(),
       );
       
