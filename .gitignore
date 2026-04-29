@@ -1,35 +1,53 @@
 ```
+# Build artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+
 # Dependencies
 .pub/
-.build/
-.dart_tool/
-
-# Build artifacts
-build/
-*.g.dart
+.buildlog
+.flutter-plugins
+.flutter-plugin-dependencies
+.packages
 
 # Logs
 *.log
+**/logs/
 
-# Environment
+# Environment variables
 .env
 .env.local
-*.env.*
-
-# OS generated files
-.DS_Store
-Thumbs.db
+.env.*
+!.env.example
 
 # IDE specific
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+.DS_Store
+Thumbs.db
 
 # Coverage
 coverage/
 *.coverage
+lcov.info
 
-# Temporary files
-*.tmp
+# Testing
+.dart_tool/
+test/**
+!test/*.dart
+
+# Distribution
+dist/
+build/
+bin/
 ```

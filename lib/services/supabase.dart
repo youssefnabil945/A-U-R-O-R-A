@@ -439,7 +439,9 @@ class SupabaseProvider extends ChangeNotifier {
   /// The current authenticated user, or `null` if not logged in.
   User? get currentUser => _client.auth.currentUser;
 
-  /// A stable integer ID for the current user (for UI keys, etc.).
+  /// The ID of the currently authenticated user
+  String? get currentUserId => currentUser?.id;
+
   int get userId => currentUser?.id.hashCode ?? 0;
 
   /// Whether a user is currently authenticated.

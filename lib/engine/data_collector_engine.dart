@@ -8,6 +8,7 @@ import '../models/product_provider.dart';
 import '../models/aurora_customer.dart';
 import 'analysis_engine.dart';
 import '../services/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// **Data Collector Engine**
 /// 
@@ -21,7 +22,7 @@ import '../services/supabase.dart';
 /// 
 /// **Storage Path:** `/app_documents/{uuid}/{username}.json`
 class DataCollectorEngine {
-  final SupabaseProvider _db;
+  final SupabaseProvider? _db;
   final AnalysisEngine _analysisEngine;
   final Uuid _uuid;
 
@@ -31,7 +32,7 @@ class DataCollectorEngine {
     required List<Bill> bills,
     required List<ProductProvider> providers,
     AnalysisEngine? analysisEngine,
-  })  : _db = db ?? SupabaseProvider(),
+  })  : _db = db,
         _analysisEngine = analysisEngine ?? AnalysisEngine(
           customers: customers.map((c) => AuroraCustomer(
             id: c.id,
@@ -59,7 +60,7 @@ class DataCollectorEngine {
         'username': username,
         'generated_at': generatedAt.toIso8601String(),
         'version': '1.0.0',
-        'seller_id': _db.currentUserId, // Assuming SupabaseService exposes this
+        'seller_id': _db?.currentUserId, // Assuming SupabaseService exposes this
       },
       'summary_kpi': kpiData,
       'customers': customers.map((c) => c.toJson()).toList(),
