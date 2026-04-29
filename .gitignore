@@ -1,37 +1,62 @@
 ```
-# Flutter/Dart specific
-.dart_tool/
-.build/
-*.dart.js
-*.map
-*.g.dart
-*.freezed.dart
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
 # Dependencies
-.pub-cache/
-pubspec.lock
-
-# Logs
-*.log
-**/logs
-
-# Environment variables
+node_modules/
+venv/
+.venv/
 .env
-.env.*
 .env.local
+*.env.*
 
-# IDE
-.idea/
-.vscode/
+# Logs and temp files
+*.log
+*.tmp
 *.swp
 *.swo
 
+# Editors
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Distribution / packaging
+dist/
+build/
+*.tar.gz
+*.zip
+*.gz
+
 # OS generated files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
+
+# Dart/Flutter specific
+.dart_tool/
+.packages
+.pub-cache/
+*.g.dart
+*.freezed.dart
+
+# Gradle
+.gradle/
+build/
+
+# MyPy
+.mypy_cache/
+.pytest_cache/
 ```

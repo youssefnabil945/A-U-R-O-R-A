@@ -204,9 +204,44 @@ class FactoryAuthService {
   /// Helper: Get index of all factories (username -> UUID mapping)
   /// In production, this would be a central database query
   Future<Map<String, String>> _getAllFactoriesIndex() async {
-    // TODO: Implement proper indexing mechanism
-    // For now, return empty map - in real app, maintain an index.json file
-    return {};
+    // Maintain an index.json file in the secure storage directory
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final indexFile = File('${directory.path}/secure_storage/factories_index.json');
+      
+      if (!await indexFile.exists()) {
+        return {};
+      }
+      
+      final content = await indexFile.readAsString();
+      if (content.isEmpty) {
+        return {};
+      }
+      
+      return Map<String, String>.from(json.decode(content));
+    } catch (e) {
+      debugPrint('Error loading factories index: $e');
+      return {};
+    }
+  }
+
+  /// Helper: Save factory to index
+  Future<void> _saveFactoryToIndex(String uuid, String username) async {
+    try {
+      final index = await _getAllFactoriesIndex();
+      index[uuid] = username;
+      
+      final directory = await getApplicationDocumentsDirectory();
+      final indexFile = File('${directory.path}/secure_storage/factories_index.json');
+      
+      if (!await indexFile.parent.exists()) {
+        await indexFile.parent.create(recursive: true);
+      }
+      
+      await indexFile.writeAsString(json.encode(index));
+    } catch (e) {
+      debugPrint('Error saving factory to index: $e');
+    }
   }
 
   /// Export factory data as JSON string

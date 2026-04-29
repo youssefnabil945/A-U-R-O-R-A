@@ -60,7 +60,7 @@ class FactoryMaterialsDB {
       final List<dynamic> jsonList = json.decode(content);
       return jsonList.map((e) => RawMaterial.fromJson(e)).toList();
     } catch (e) {
-      print('Error loading materials: $e');
+      debugPrint('Error loading materials: $e');
       return [];
     }
   }
