@@ -1,24 +1,17 @@
 ```
-# Flutter/Dart specific
-.dart_tool/
-.build/
-*.dart.js
-*.map
-*.g.dart
-*.freezed.dart
-
 # Dependencies
-.pub-cache/
-pubspec.lock
+.pub/
+.build/
+.dart_tool/
 
-# Logs
+# Logs and temp files
 *.log
-**/logs
+*.tmp
 
-# Environment variables
+# Environment
 .env
-.env.*
 .env.local
+*.env.*
 
 # IDE
 .idea/
@@ -26,12 +19,41 @@ pubspec.lock
 *.swp
 *.swo
 
+# Build artifacts
+build/
+dist/
+target/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
 # OS generated files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```

@@ -17,6 +17,9 @@ import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as img;
 
+// Import refactored modules
+export 'supabase/exports.dart';
+
 // ============================================================================
 // Constants & Configuration
 // ============================================================================
