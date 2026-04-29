@@ -29,6 +29,9 @@ class Customer {
     this.updatedAt,
   });
 
+  /// Getter for phoneNumber compatibility with AuroraCustomer
+  String? get phoneNumber => phone;
+
   factory Customer.fromJson(Map<String, dynamic> json) => _$CustomerFromJson(json);
   
   Map<String, dynamic> toJson() => _$CustomerToJson(this);

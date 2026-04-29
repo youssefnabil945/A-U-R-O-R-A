@@ -99,14 +99,40 @@ class WalletTransaction {
       walletId: map['wallet_id'] ?? '',
       userId: map['user_id'] ?? '',
       amount: (map['amount'] ?? 0).toDouble(),
-      type: TransactionType.fromString(map['type'] ?? 'credit'),
-      status: TransactionStatus.fromString(map['status'] ?? 'pending'),
+      type: _parseTransactionType(map['type'] ?? 'credit'),
+      status: _parseTransactionStatus(map['status'] ?? 'pending'),
       description: map['description'] as String?,
       referenceId: map['reference_id'] as String?,
       createdAt: map['created_at'] != null 
           ? DateTime.parse(map['created_at']) 
           : DateTime.now(),
     );
+  }
+
+  static TransactionType _parseTransactionType(String value) {
+    switch (value.toLowerCase()) {
+      case 'credit':
+        return TransactionType.credit;
+      case 'debit':
+        return TransactionType.debit;
+      case 'refund':
+        return TransactionType.refund;
+      default:
+        return TransactionType.credit;
+    }
+  }
+
+  static TransactionStatus _parseTransactionStatus(String value) {
+    switch (value.toLowerCase()) {
+      case 'completed':
+        return TransactionStatus.completed;
+      case 'failed':
+        return TransactionStatus.failed;
+      case 'cancelled':
+        return TransactionStatus.cancelled;
+      default:
+        return TransactionStatus.pending;
+    }
   }
 
   Map<String, dynamic> toMap() {

@@ -160,7 +160,7 @@ class ProductionQueueDB {
       final List<dynamic> jsonList = json.decode(content);
       return jsonList.map((e) => ProductionOrder.fromJson(e)).toList();
     } catch (e) {
-      print('Error loading production queue: $e');
+      debugPrint('Error loading production queue: $e');
       return [];
     }
   }

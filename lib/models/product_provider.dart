@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'product_provider.g.dart';
@@ -20,6 +21,7 @@ class ProductProvider {
   DateTime lastSupplyDate;
   String providerRating; // e.g., 'Preferred', 'Standard', 'New'
   List<String> suppliedProductIds;
+  final List<String>? products;
   
   ProductProvider({
     required this.id,
@@ -36,10 +38,13 @@ class ProductProvider {
     DateTime? lastSupplyDate,
     this.providerRating = 'New',
     List<String>? suppliedProductIds,
+    this.products,
   }) : lastSupplyDate = lastSupplyDate ?? DateTime.now(),
        suppliedProductIds = suppliedProductIds ?? [];
 
-  factory ProductProvider.fromJson(Map<String, dynamic> json) => _$ProductProviderFromJson(json);
+  factory ProductProvider.fromJson(Map<String, dynamic> json) =>
+      _$ProductProviderFromJson(json);
+
   Map<String, dynamic> toJson() => _$ProductProviderToJson(this);
 
   ProductProvider copyWith({
@@ -57,6 +62,7 @@ class ProductProvider {
     DateTime? lastSupplyDate,
     String? providerRating,
     List<String>? suppliedProductIds,
+    List<String>? products,
   }) {
     return ProductProvider(
       id: id ?? this.id,
@@ -73,6 +79,7 @@ class ProductProvider {
       lastSupplyDate: lastSupplyDate ?? this.lastSupplyDate,
       providerRating: providerRating ?? this.providerRating,
       suppliedProductIds: suppliedProductIds ?? this.suppliedProductIds,
+      products: products ?? this.products,
     );
   }
 }

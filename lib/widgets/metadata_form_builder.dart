@@ -519,7 +519,9 @@ class _MetadataFormBuilderState extends State<MetadataFormBuilder> {
       if (hex.length == 6) {
         return Color(int.parse('FF$hex', radix: 16));
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to parse color: $colorString, error: $e');
+    }
     return Colors.grey;
   }
 }

@@ -5,8 +5,10 @@ import 'package:uuid/uuid.dart';
 import '../models/customer.dart';
 import '../models/bill.dart';
 import '../models/product_provider.dart';
+import '../models/aurora_customer.dart';
 import 'analysis_engine.dart';
-import '../services/supabase_service.dart';
+import '../services/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// **Data Collector Engine**
 /// 
@@ -20,15 +22,28 @@ import '../services/supabase_service.dart';
 /// 
 /// **Storage Path:** `/app_documents/{uuid}/{username}.json`
 class DataCollectorEngine {
-  final SupabaseService _db;
+  final SupabaseProvider? _db;
   final AnalysisEngine _analysisEngine;
   final Uuid _uuid;
 
   DataCollectorEngine({
-    SupabaseService? db,
+    SupabaseProvider? db,
+    required List<Customer> customers,
+    required List<Bill> bills,
+    required List<ProductProvider> providers,
     AnalysisEngine? analysisEngine,
-  })  : _db = db ?? SupabaseService(),
-        _analysisEngine = analysisEngine ?? AnalysisEngine(),
+  })  : _db = db,
+        _analysisEngine = analysisEngine ?? AnalysisEngine(
+          customers: customers.map((c) => AuroraCustomer(
+            id: c.id,
+            name: c.name,
+            phoneNumber: c.phoneNumber ?? '',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          )).toList(),
+          bills: bills,
+          providers: providers,
+        ),
         _uuid = const Uuid();
 
   /// The result structure that will be saved to JSON
@@ -45,7 +60,7 @@ class DataCollectorEngine {
         'username': username,
         'generated_at': generatedAt.toIso8601String(),
         'version': '1.0.0',
-        'seller_id': _db.currentUserId, // Assuming SupabaseService exposes this
+        'seller_id': _db?.currentUserId, // Assuming SupabaseService exposes this
       },
       'summary_kpi': kpiData,
       'customers': customers.map((c) => c.toJson()).toList(),
@@ -62,18 +77,29 @@ class DataCollectorEngine {
   /// 4. Saves combined JSON file.
   Future<Map<String, dynamic>> collectAndSaveAllData({
     required String username,
+    required List<Customer> customers,
+    required List<Bill> bills,
+    required List<ProductProvider> providers,
   }) async {
     print('🚀 Starting Data Collection Engine...');
 
-    // 1. Fetch Raw Data
-    final customers = await _db.getCustomers(); // Assumes this method exists
-    final bills = await _db.getBills();         // Assumes this method exists
-    final providers = await _db.getProviders(); // Assumes this method exists
-
-    print('📦 Fetched: ${customers.length} Customers, ${bills.length} Bills, ${providers.length} Providers');
+    // 1. Use provided data (already fetched)
+    print('📦 Processing: ${customers.length} Customers, ${bills.length} Bills, ${providers.length} Providers');
 
     // 2. Run Analysis Engine to get KPIs
-    final kpiData = await _analysisEngine.generateFullAnalysis(
+    final analysisEngine = AnalysisEngine(
+      customers: customers.map((c) => AuroraCustomer(
+        id: c.id,
+        name: c.name,
+        phoneNumber: c.phoneNumber ?? '',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      )).toList(),
+      bills: bills,
+      providers: providers,
+    );
+    
+    final kpiData = _generateFullAnalysis(
       customers: customers,
       bills: bills,
       providers: providers,
@@ -106,6 +132,26 @@ class DataCollectorEngine {
       'path': filePath,
       'folder_id': sessionId,
       'data': compiledData,
+    };
+  }
+
+  /// Generate full analysis KPI data
+  Map<String, dynamic> _generateFullAnalysis({
+    required List<Customer> customers,
+    required List<Bill> bills,
+    required List<ProductProvider> providers,
+  }) {
+    double totalRevenue = bills.fold(0.0, (sum, bill) => sum + bill.total);
+    int totalOrders = bills.length;
+    int totalCustomers = customers.length;
+    double averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0.0;
+    
+    return {
+      'total_revenue': totalRevenue,
+      'total_orders': totalOrders,
+      'total_customers': totalCustomers,
+      'average_order_value': averageOrderValue,
+      'total_providers': providers.length,
     };
   }
 

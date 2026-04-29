@@ -31,6 +31,8 @@ class Factory {
   });
 
   /// Convert Factory to JSON Map for storage
+  Map<String, dynamic> toMap() => toJson();
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -49,6 +51,8 @@ class Factory {
   }
 
   /// Create Factory from JSON Map
+  factory Factory.fromMap(Map<String, dynamic> map) => fromJson(map);
+
   factory Factory.fromJson(Map<String, dynamic> json) {
     return Factory(
       id: json['id'] as String,

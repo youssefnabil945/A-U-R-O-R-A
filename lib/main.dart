@@ -41,8 +41,6 @@ import 'package:aurora/pages/factory/factory_login_page.dart';
 import 'package:aurora/pages/factory/factory_dashboard_page.dart';
 import 'package:aurora/pages/singup/home.dart';
 import 'package:aurora/pages/singup/login.dart';
-import 'package:aurora/pages/welcome_page.dart';
-import 'package:aurora/pages/factory_dashboard_page.dart';
 import 'package:aurora/services/supabase.dart';
 import 'package:aurora/services/auth_provider.dart';
 import 'package:aurora/services/product_provider.dart';

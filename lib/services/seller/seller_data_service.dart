@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/seller/seller_customer.dart';
 import '../models/seller/seller_bill.dart';
@@ -56,7 +57,7 @@ class SellerDataService {
       final List<dynamic> jsonList = json.decode(content);
       return jsonList.map((json) => SellerCustomer.fromMap(json)).toList();
     } catch (e) {
-      print('Error loading customers: $e');
+      debugPrint('Error loading customers: $e');
       return [];
     }
   }
@@ -128,7 +129,7 @@ class SellerDataService {
       final List<dynamic> jsonList = json.decode(content);
       return jsonList.map((json) => SellerBill.fromMap(json)).toList();
     } catch (e) {
-      print('Error loading bills: $e');
+      debugPrint('Error loading bills: $e');
       return [];
     }
   }
@@ -204,7 +205,7 @@ class SellerDataService {
         await billsFile.writeAsString('[]');
       }
     } catch (e) {
-      print('Error initializing data files: $e');
+      debugPrint('Error initializing data files: $e');
       rethrow;
     }
   }

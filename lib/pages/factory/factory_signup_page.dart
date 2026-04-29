@@ -55,20 +55,13 @@ class _FactorySignupPageState extends State<FactorySignupPage> {
 
     try {
       final authService = FactoryAuthService();
-      final factory = await authService.signUp(
+      final factory = await authService.register(
         username: _usernameController.text.trim(),
-        email: _emailController.text.trim(),
         password: _passwordController.text,
-        factoryName: _factoryNameController.text.trim(),
-        contactPhone: _contactPhoneController.text.trim().isEmpty 
-            ? null 
-            : _contactPhoneController.text.trim(),
-        address: _addressController.text.trim().isEmpty 
+        name: _factoryNameController.text.trim(),
+        location: _addressController.text.trim().isEmpty 
             ? null 
             : _addressController.text.trim(),
-        taxId: _taxIdController.text.trim().isEmpty 
-            ? null 
-            : _taxIdController.text.trim(),
       );
 
       if (factory != null && mounted) {
