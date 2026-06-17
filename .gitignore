@@ -1,28 +1,26 @@
 ```
 # Flutter/Dart specific
 .dart_tool/
-.build/
-*.dart.js
-*.map
+.packages
+.pub/
+build/
 *.g.dart
 *.freezed.dart
 
 # Dependencies
-.pub-cache/
-pubspec.lock
+node_modules/
 
 # Logs
 *.log
-**/logs
 
 # Environment variables
 .env
-.env.*
 .env.local
+*.env.*
 
-# IDE
-.idea/
+# IDE files
 .vscode/
+.idea/
 *.swp
 *.swo
 
@@ -34,4 +32,12 @@ pubspec.lock
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Temporary files
+*.tmp
 ```
